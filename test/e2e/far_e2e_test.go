@@ -309,6 +309,13 @@ func wasFarTaintAdded(nodeName string) {
 	log.Info("FAR taint was added", "node name", node.Name, "taint key", farTaint.Key, "taint effect", farTaint.Effect)
 }
 
+// buildExpectedLogOutput returns a string with a node identifier and a success message for the reboot action
+func buildExpectedLogOutput(nodeName, sucesssMessage string) string {
+	expectedString := "\"Node name\": \"" + nodeName + "\", \"Response\": \"" + sucesssMessage
+	log.Info("Substring to search in the logs is ", "expectedString", expectedString)
+	return expectedString
+}
+
 // checkFarLogs gets the FAR pod and checks whether it's logs have logString
 func checkFarLogs(farNodeName, logString string) {
 	EventuallyWithOffset(1, func() string {
@@ -383,7 +390,8 @@ func checkRemediation(nodeName string, nodeBootTimeBefore time.Time, oldPodCreat
 	wasFarTaintAdded(nodeName)
 
 	By("Check if the response of the FA was a success")
-	checkFarLogs(nodeName, controllers.SuccessFAResponse)
+	expectedLog := buildExpectedLogOutput(nodeName, controllers.SuccessFAResponse)
+	checkFarLogs(nodeName, expectedLog)
 
 	By("Getting new node's boot time")
 	wasNodeRebooted(nodeName, nodeBootTimeBefore)
