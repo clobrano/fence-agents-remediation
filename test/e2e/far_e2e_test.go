@@ -309,13 +309,20 @@ func wasFarTaintAdded(nodeName string) {
 	log.Info("FAR taint was added", "node name", node.Name, "taint key", farTaint.Key, "taint effect", farTaint.Effect)
 }
 
-// checkFarLogs gets the FAR pod and checks whether its logs have logString
-func checkFarLogs(logString string) {
+// checkFarLogs gets the FAR pod and checks whether it's logs have logString
+func checkFarLogs(farNodeName, logString string) {
 	EventuallyWithOffset(1, func() string {
 		pod, err := utils.GetFenceAgentsRemediationPod(k8sClient)
 		if err != nil {
 			log.Error(err, "failed to get FAR pod. Might try again")
 			return ""
+		}
+		if pod.Spec.NodeName == farNodeName {
+			// When reboot is running on FAR node, then FAR pod will be recreated on a new node
+			// and since the FA command won't be exuected again, then the log won't include
+			// any success message, so we won't verfiy the FAR success messsage on this scenario
+			log.Info("The created FAR CR is for the node FAR pod resides, thus we won't test its logs", "expected string", logString)
+			return logString
 		}
 		logs, err := e2eUtils.GetLogs(clientSet, pod, containerName)
 		if err != nil {
@@ -376,10 +383,7 @@ func checkRemediation(nodeName string, nodeBootTimeBefore time.Time, oldPodCreat
 	wasFarTaintAdded(nodeName)
 
 	By("Check if the response of the FA was a success")
-	// TODO: When reboot is running only once and it is running on FAR node, then FAR pod will
-	// be recreated on a new node and since the FA command won't be exuected again, then the log
-	// won't include any success message
-	checkFarLogs(controllers.SuccessFAResponse)
+	checkFarLogs(nodeName, controllers.SuccessFAResponse)
 
 	By("Getting new node's boot time")
 	wasNodeRebooted(nodeName, nodeBootTimeBefore)
