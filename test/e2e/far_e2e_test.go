@@ -310,9 +310,9 @@ func wasFarTaintAdded(nodeName string) {
 }
 
 // buildExpectedLogOutput returns a string with a node identifier and a success message for the reboot action
-func buildExpectedLogOutput(nodeName, sucesssMessage string) string {
-	expectedString := "\"Node name\": \"" + nodeName + "\", \"Response\": \"" + sucesssMessage
-	log.Info("Substring to search in the logs is ", "expectedString", expectedString)
+func buildExpectedLogOutput(nodeName, successMessage string) string {
+	expectedString := fmt.Sprintf("\"Node name\": \"%s\", \"Response\": \"%s", nodeName, successMessage)
+	log.Info("Substring to search in the logs", "expectedString", expectedString)
 	return expectedString
 }
 
@@ -326,8 +326,8 @@ func checkFarLogs(farNodeName, logString string) {
 		}
 		if pod.Spec.NodeName == farNodeName {
 			// When reboot is running on FAR node, then FAR pod will be recreated on a new node
-			// and since the FA command won't be exuected again, then the log won't include
-			// any success message, so we won't verfiy the FAR success messsage on this scenario
+			// and since the FA command won't be executed again, then the log won't include
+			// any success message, so we won't verfiy the FAR success message on this scenario
 			log.Info("The created FAR CR is for the node FAR pod resides, thus we won't test its logs", "expected string", logString)
 			return logString
 		}
