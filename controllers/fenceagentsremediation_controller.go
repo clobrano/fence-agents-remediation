@@ -182,13 +182,6 @@ func (r *FenceAgentsRemediationReconciler) Reconcile(ctx context.Context, req ct
 		// The remeditation has already been processed, thus we can begin with exuecting the FA for the node
 		// We run the FA until its action (reboot) was succeeded, and we verify it with the fenceAgentActionSucceeded condition
 
-		// Fetch the FAR's pod
-		r.Log.Info("Fetch FAR's pod")
-		pod, err := utils.GetFenceAgentsRemediationPod(r.Client)
-		if err != nil {
-			r.Log.Error(err, "Can't find FAR's pod by its label", "CR's Name", req.Name)
-			return emptyResult, err
-		}
 		//TODO: Check that FA is excutable? run cli.IsExecuteable
 
 		// Build FA parameters
@@ -202,7 +195,7 @@ func (r *FenceAgentsRemediationReconciler) Reconcile(ctx context.Context, req ct
 		cmd := append([]string{far.Spec.Agent}, faParams...)
 		// The Fence Agent is excutable and the parameters structure are valid, but we don't check their values
 		r.Log.Info("Execute the fence agent", "Fence Agent", far.Spec.Agent, "Node Name", req.Name)
-		outputRes, outputErr, err := r.Executor.Execute(pod, cmd)
+		outputRes, outputErr, err := r.Executor.Execute(cmd)
 		if err != nil {
 			// response was a failure message
 			r.Log.Error(err, "Fence Agent response was a failure", "CR's Name", req.Name)

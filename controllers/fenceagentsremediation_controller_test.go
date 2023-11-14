@@ -366,7 +366,7 @@ func newMockExecuter() *mockExecuter {
 }
 
 // Execute is a dummy function for testing which stores the production command
-func (m *mockExecuter) Execute(_ *corev1.Pod, command []string) (stdout string, stderr string, err error) {
+func (m *mockExecuter) Execute(command []string) (stdout string, stderr string, err error) {
 	m.command = command
 	m.mockLog.Info("Executed command has been stored", "command", m.command)
 	return SuccessFAResponse + "\n", "", nil
