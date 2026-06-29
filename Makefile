@@ -52,6 +52,13 @@ export CHANNELS
 DEFAULT_CHANNEL = stable
 export DEFAULT_CHANNEL
 
+# Validate DEFAULT_CHANNEL is in CHANNELS
+ifneq (,$(DEFAULT_CHANNEL))
+  ifeq (,$(findstring $(DEFAULT_CHANNEL),$(CHANNELS)))
+    $(error DEFAULT_CHANNEL "$(DEFAULT_CHANNEL)" must be present in CHANNELS "$(CHANNELS)")
+  endif
+endif
+
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
